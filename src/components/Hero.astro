@@ -1,0 +1,68 @@
+---
+// src/components/Hero.astro
+import "../styles/global.css";
+---
+
+<header class="hero" id="about">
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="status-dot"></span>
+                <span class="status-text">System Online — 500h Professional Experience</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-line">Technical-Creative</span>
+                <span class="title-line gradient-text">Hybrid_</span>
+            </h1>
+            <p class="hero-subtitle">
+                <span class="typing-text" id="typingText">Optimizing System Integrity and Visual Identity</span>
+                <span class="terminal-cursor-blink">|</span>
+            </p>
+            <p class="hero-description">
+                BSIT Graduate bridging the gap between hardware-software solutions and high-standard digital branding. 
+                Specialized in AI-Integrated Web Development, IoT implementations, and enterprise-grade visual identity systems.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value">500h</span>
+                    <span class="stat-label">Internship Hours</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">1yr</span>
+                    <span class="stat-label">AI-Integrated Freelance</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">150+</span>
+                    <span class="stat-label">Brand Assets Delivered</span>
+                </div>
+            </div>
+            <div class="hero-cta">
+                <a href="#experience" class="btn btn-primary">
+                    <i data-lucide="terminal"></i>
+                    View Experience
+                </a>
+                <a href="#contact" class="btn btn-secondary">
+                    <i data-lucide="mail"></i>
+                    Get in Touch
+                </a>
+            </div>
+            <div class="language-bar">
+                <span class="lang-label">Linguistic Proficiency:</span>
+                <span class="lang-tag">English (C1)</span>
+                <span class="lang-tag">Tagalog (C2)</span>
+                <span class="lang-tag">Cebuano (C2)</span>
+            </div>
+        </div>
+        <div class="hero-profile">
+            <img src="/yanyan.png" alt="Christian Paul Atillo" class="profile-picture">
+        </div>
+    </div>
+    <div class="hero-scroll">
+        <div class="scroll-indicator">
+            <span>scroll</span>
+            <i data-lucide="chevron-down"></i>
+        </div>
+    </div>
+</header>

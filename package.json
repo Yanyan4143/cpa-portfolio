@@ -1,0 +1,27 @@
+{
+  "name": "cpa-portfolio",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.4",
+    "@astrojs/vercel": "^10.0.6",
+    "@google/generative-ai": "^0.24.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^6.2.2",
+    "groq-sdk": "^1.1.2",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.184.0"
+  }
+}

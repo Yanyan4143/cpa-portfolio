@@ -1,0 +1,111 @@
+---
+// src/components/Header.astro
+---
+
+<nav class="glass-nav">
+    <div class="nav-brand">
+        <span class="terminal-prompt">C_ATILLO@PORTFOLIO</span>
+        <span class="terminal-colon">:</span>
+        <span class="terminal-path">~/system</span>
+        <span class="terminal-dollar">$</span>
+        <span class="terminal-cursor">_</span>
+    </div>
+    <div class="nav-links" id="nav-links">
+        <button class="nav-link" data-page="about"><span class="nav-icon">~</span>about</button>
+        <button class="nav-link" data-page="experience"><span class="nav-icon">~</span>experience</button>
+        <button class="nav-link" data-page="skills"><span class="nav-icon">~</span>skills</button>
+        <button class="nav-link" data-page="projects"><span class="nav-icon">~</span>projects</button>
+        <button class="nav-link nav-cta" data-page="contact">connect.exe</button>
+    </div>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+        <i data-lucide="menu"></i>
+    </button>
+</nav>
+
+<script>
+    // Mobile menu functionality - No glitches
+    const menuBtn = document.getElementById('mobileMenuBtn');
+    const navLinks = document.getElementById('nav-links');
+    let menuOpen = false;
+    
+    function toggleMenu() {
+        menuOpen = !menuOpen;
+        
+        if (menuOpen) {
+            navLinks.style.display = 'flex';
+            navLinks.style.position = 'absolute';
+            navLinks.style.top = '100%';
+            navLinks.style.left = '0';
+            navLinks.style.right = '0';
+            navLinks.style.flexDirection = 'column';
+            navLinks.style.backgroundColor = 'rgba(3, 7, 18, 0.98)';
+            navLinks.style.backdropFilter = 'blur(12px)';
+            navLinks.style.padding = '1rem';
+            navLinks.style.gap = '1rem';
+            navLinks.style.borderBottom = '1px solid rgba(59, 130, 246, 0.2)';
+            navLinks.style.zIndex = '999';
+        } else {
+            navLinks.style.display = '';
+            navLinks.style.position = '';
+            navLinks.style.top = '';
+            navLinks.style.left = '';
+            navLinks.style.right = '';
+            navLinks.style.flexDirection = '';
+            navLinks.style.backgroundColor = '';
+            navLinks.style.backdropFilter = '';
+            navLinks.style.padding = '';
+            navLinks.style.gap = '';
+            navLinks.style.borderBottom = '';
+            navLinks.style.zIndex = '';
+        }
+    }
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', toggleMenu);
+    }
+    
+    // Close menu when clicking a link
+    const allNavLinks = document.querySelectorAll('.nav-link');
+    allNavLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768 && menuOpen) {
+                menuOpen = false;
+                if (navLinks) {
+                    navLinks.style.display = '';
+                    navLinks.style.position = '';
+                    navLinks.style.top = '';
+                    navLinks.style.left = '';
+                    navLinks.style.right = '';
+                    navLinks.style.flexDirection = '';
+                    navLinks.style.backgroundColor = '';
+                    navLinks.style.backdropFilter = '';
+                    navLinks.style.padding = '';
+                    navLinks.style.gap = '';
+                    navLinks.style.borderBottom = '';
+                    navLinks.style.zIndex = '';
+                }
+            }
+        });
+    });
+    
+    // Close menu on window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && menuOpen) {
+            menuOpen = false;
+            if (navLinks) {
+                navLinks.style.display = '';
+                navLinks.style.position = '';
+                navLinks.style.top = '';
+                navLinks.style.left = '';
+                navLinks.style.right = '';
+                navLinks.style.flexDirection = '';
+                navLinks.style.backgroundColor = '';
+                navLinks.style.backdropFilter = '';
+                navLinks.style.padding = '';
+                navLinks.style.gap = '';
+                navLinks.style.borderBottom = '';
+                navLinks.style.zIndex = '';
+            }
+        }
+    });
+</script>

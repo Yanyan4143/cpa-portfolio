@@ -1,0 +1,198 @@
+---
+// src/layouts/Layout.astro
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import ChatBot from "../components/ChatBot.tsx";
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPA | Portfolio</title>
+    <meta name="description" content="BSIT Graduate | IoT Solutions | AI-Integrated Web Development | Graphic Design">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/fingerprint.png">
+    <!-- MEDIUM VISIBILITY PARTICLE BACKGROUND -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <Header />
+    <main id="main-content">
+        <slot />
+    </main>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script type="module">
+    import * as THREE from 'three';
+
+    function initParticleBackground() {
+        // Create scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x030712);
+        
+        // Create camera
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 22;
+        
+        // Create renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x030712);
+        
+        // Style canvas to be behind content
+        const canvas = renderer.domElement;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.zIndex = '0';
+        canvas.style.pointerEvents = 'none';
+        
+        document.body.insertBefore(canvas, document.body.firstChild);
+        
+        // 2000 PARTICLES - MEDIUM VISIBILITY
+        const particleCount = 2000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        
+        // Store original positions
+        const originalPositions = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Spread particles in a sphere
+            const radius = 12 + Math.random() * 20;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta) * 0.6;
+            const z = radius * Math.cos(phi);
+            
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+            
+            originalPositions[i * 3] = x;
+            originalPositions[i * 3 + 1] = y;
+            originalPositions[i * 3 + 2] = z;
+            
+            // MEDIUM VISIBILITY COLORS - Brighter but not overwhelming
+            const colorType = Math.random();
+            if (colorType < 0.5) {
+                // Bright Blue
+                colors[i * 3] = 0.4;
+                colors[i * 3 + 1] = 0.7;
+                colors[i * 3 + 2] = 1.0;
+            } else if (colorType < 0.75) {
+                // Bright Cyan
+                colors[i * 3] = 0.3;
+                colors[i * 3 + 1] = 0.8;
+                colors[i * 3 + 2] = 1.0;
+            } else {
+                // Bright Purple
+                colors[i * 3] = 0.7;
+                colors[i * 3 + 1] = 0.5;
+                colors[i * 3 + 2] = 1.0;
+            }
+        }
+        
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        
+        // MEDIUM VISIBILITY MATERIAL - Balanced opacity and size
+        const material = new THREE.PointsMaterial({
+            size: 0.13,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.65,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        
+        // Mouse position tracking
+        const mouse = { x: 0, y: 0 };
+        let time = 0;
+        
+        document.addEventListener('mousemove', (event) => {
+            // Normalize mouse coordinates (-1 to 1)
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = (event.clientY / window.innerHeight) * 2 - 1;
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.012;
+            
+            const positionsAttr = geometry.attributes.position.array;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const ix = i * 3;
+                const iy = i * 3 + 1;
+                const iz = i * 3 + 2;
+                
+                // Get original position
+                const origX = originalPositions[ix];
+                const origY = originalPositions[iy];
+                const origZ = originalPositions[iz];
+                
+                // Gentle floating movement
+                const floatX = Math.sin(time * 0.4 + origY * 0.25) * 0.4;
+                const floatY = Math.cos(time * 0.35 + origX * 0.25) * 0.4;
+                const floatZ = Math.sin(time * 0.45 + origX * 0.2) * 0.3;
+                
+                // Mouse influence - Medium strength
+                const influenceX = mouse.x * 1.8 * (1 - Math.abs(origZ) / 35);
+                const influenceY = mouse.y * 1.2 * (1 - Math.abs(origZ) / 35);
+                
+                // Combine movements
+                positionsAttr[ix] = origX + floatX + influenceX;
+                positionsAttr[iy] = origY + floatY + influenceY;
+                positionsAttr[iz] = origZ + floatZ;
+            }
+            
+            geometry.attributes.position.needsUpdate = true;
+            
+            // Subtle rotation based on mouse
+            particles.rotation.y = mouse.x * 0.15;
+            particles.rotation.x = mouse.y * 0.1;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initParticleBackground);
+    } else {
+        initParticleBackground();
+    }
+    </script>
+    
+    <ChatBot client:load />
+    <script type="module" src="/scripts/main.js"></script>
+</body>
+</html>

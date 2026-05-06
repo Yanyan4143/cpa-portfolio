@@ -1,0 +1,352 @@
+// public/scripts/3d-background.js
+import * as THREE from 'three';
+
+let scene, camera, renderer;
+let particles, particleSystem;
+let rotatingCube, torusKnot, wireframeSphere;
+let neonGrid, floatingShapes = [];
+let clock;
+
+function init3DBackground() {
+    // Create scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x030712);
+    scene.fog = new THREE.FogExp2(0x030712, 0.002); // Add fog for depth
+    
+    // Create camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 25);
+    camera.lookAt(0, 0, 0);
+    
+    // Create renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x030712);
+    renderer.shadowMap.enabled = true; // Enable shadows
+    document.body.insertBefore(renderer.domElement, document.body.firstChild);
+    
+    clock = new THREE.Clock();
+    
+    // ============ 1. MAIN PARTICLE SYSTEM (Stars) ============
+    const particleCount = 3000;
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleColors = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+        // Position in a sphere
+        const radius = 40 + Math.random() * 30;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        
+        particlePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+        particlePositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * 0.5;
+        particlePositions[i * 3 + 2] = radius * Math.cos(phi);
+        
+        // Colors: blue, purple, cyan, green
+        const colorChoice = Math.random();
+        if (colorChoice < 0.33) {
+            particleColors[i * 3] = 0.2;     // R
+            particleColors[i * 3 + 1] = 0.5; // G
+            particleColors[i * 3 + 2] = 1.0; // B - Blue
+        } else if (colorChoice < 0.66) {
+            particleColors[i * 3] = 0.6;     // R
+            particleColors[i * 3 + 1] = 0.2; // G
+            particleColors[i * 3 + 2] = 1.0; // B - Purple
+        } else {
+            particleColors[i * 3] = 0.1;     // R
+            particleColors[i * 3 + 1] = 0.8; // G
+            particleColors[i * 3 + 2] = 0.5; // B - Green/Cyan
+        }
+    }
+    
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particlesGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+    
+    const particleMaterial = new THREE.PointsMaterial({
+        size: 0.15,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending
+    });
+    
+    particles = new THREE.Points(particlesGeometry, particleMaterial);
+    scene.add(particles);
+    
+    // ============ 2. FLOATING DUST PARTICLES ============
+    const dustCount = 1500;
+    const dustGeometry = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(dustCount * 3);
+    
+    for (let i = 0; i < dustCount; i++) {
+        dustPositions[i * 3] = (Math.random() - 0.5) * 80;
+        dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+        dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+    }
+    
+    dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    const dustMaterial = new THREE.PointsMaterial({
+        color: 0x4f9eff,
+        size: 0.05,
+        transparent: true,
+        opacity: 0.4,
+        blending: THREE.AdditiveBlending
+    });
+    
+    const dust = new THREE.Points(dustGeometry, dustMaterial);
+    scene.add(dust);
+    
+    // ============ 3. ROTATING TORUS KNOT (Futuristic Shape) ============
+    const knotGeometry = new THREE.TorusKnotGeometry(2.5, 0.4, 200, 32, 3, 4);
+    const knotMaterial = new THREE.MeshStandardMaterial({
+        color: 0x3b82f6,
+        emissive: 0x1e40af,
+        emissiveIntensity: 0.5,
+        metalness: 0.8,
+        roughness: 0.2,
+        wireframe: false
+    });
+    torusKnot = new THREE.Mesh(knotGeometry, knotMaterial);
+    torusKnot.position.set(-5, -1, -5);
+    scene.add(torusKnot);
+    
+    // Wireframe version for extra effect
+    const knotWireframeMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.3
+    });
+    const torusKnotWire = new THREE.Mesh(knotGeometry, knotWireframeMaterial);
+    torusKnot.add(torusKnotWire);
+    
+    // ============ 4. ROTATING CUBE WITH NEON EDGES ============
+    const cubeGeometry = new THREE.BoxGeometry(3, 3, 3);
+    const cubeMaterial = new THREE.MeshStandardMaterial({
+        color: 0x8b5cf6,
+        emissive: 0x4c1d95,
+        emissiveIntensity: 0.3,
+        metalness: 0.9,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.7
+    });
+    rotatingCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    rotatingCube.position.set(6, 2, -4);
+    scene.add(rotatingCube);
+    
+    // Add neon edges to cube
+    const edgesGeometry = new THREE.EdgesGeometry(cubeGeometry);
+    const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff });
+    const wireframe = new THREE.LineSegments(edgesGeometry, edgesMaterial);
+    rotatingCube.add(wireframe);
+    
+    // ============ 5. FLOATING SPHERES ============
+    const sphereCount = 8;
+    for (let i = 0; i < sphereCount; i++) {
+        const sphereGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+        const sphereMaterial = new THREE.MeshStandardMaterial({
+            color: 0x10b981,
+            emissive: 0x065f46,
+            emissiveIntensity: 0.4,
+            metalness: 0.6,
+            roughness: 0.3
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.userData = {
+            initialX: (Math.random() - 0.5) * 15,
+            initialY: (Math.random() - 0.5) * 10,
+            initialZ: (Math.random() - 0.5) * 15 - 5,
+            speedX: 0.5 + Math.random() * 1,
+            speedY: 0.3 + Math.random() * 0.8,
+            speedZ: 0.4 + Math.random() * 0.7
+        };
+        sphere.position.set(
+            sphere.userData.initialX,
+            sphere.userData.initialY,
+            sphere.userData.initialZ
+        );
+        scene.add(sphere);
+        floatingShapes.push(sphere);
+    }
+    
+    // ============ 6. NEON GRID FLOOR ============
+    const gridHelper = new THREE.GridHelper(50, 40, 0x3b82f6, 0x1e3a8a);
+    gridHelper.position.y = -6;
+    gridHelper.material.transparent = true;
+    gridHelper.material.opacity = 0.3;
+    scene.add(gridHelper);
+    
+    // Add a second rotated grid
+    const gridHelper2 = new THREE.GridHelper(50, 40, 0x8b5cf6, 0x4c1d95);
+    gridHelper2.position.y = -5.8;
+    gridHelper2.rotation.x = Math.PI / 2;
+    gridHelper2.material.transparent = true;
+    gridHelper2.material.opacity = 0.2;
+    scene.add(gridHelper2);
+    
+    // ============ 7. RINGS / CIRCLES ============
+    const ringGeometry = new THREE.TorusGeometry(3, 0.08, 64, 200);
+    const ringMaterial = new THREE.MeshStandardMaterial({
+        color: 0x3b82f6,
+        emissive: 0x1e40af,
+        emissiveIntensity: 0.6
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+    ring.position.set(0, 2, -8);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
+    
+    const ring2Geometry = new THREE.TorusGeometry(4, 0.05, 64, 200);
+    const ring2Material = new THREE.MeshStandardMaterial({
+        color: 0x8b5cf6,
+        emissive: 0x4c1d95,
+        emissiveIntensity: 0.4
+    });
+    const ring2 = new THREE.Mesh(ring2Geometry, ring2Material);
+    ring2.position.set(0, -1, -10);
+    ring2.rotation.x = Math.PI / 3;
+    ring2.rotation.z = Math.PI / 4;
+    scene.add(ring2);
+    
+    // ============ 8. LIGHTING ============
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene.add(ambientLight);
+    
+    // Main directional light
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 10, 7);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+    
+    // Colored point lights
+    const blueLight = new THREE.PointLight(0x3b82f6, 0.5);
+    blueLight.position.set(3, 2, 4);
+    scene.add(blueLight);
+    
+    const purpleLight = new THREE.PointLight(0x8b5cf6, 0.5);
+    purpleLight.position.set(-3, 1, 5);
+    scene.add(purpleLight);
+    
+    const greenLight = new THREE.PointLight(0x10b981, 0.3);
+    greenLight.position.set(0, 3, -2);
+    scene.add(greenLight);
+    
+    // Moving light
+    const movingLight = new THREE.PointLight(0xff00ff, 0.4);
+    scene.add(movingLight);
+    
+    // ============ 9. ADDITIONAL FLOATING SHAPES ============
+    // Icosahedron
+    const icoGeometry = new THREE.IcosahedronGeometry(1.2, 0);
+    const icoMaterial = new THREE.MeshStandardMaterial({
+        color: 0xef4444,
+        emissive: 0x7f1d1d,
+        emissiveIntensity: 0.3,
+        wireframe: true
+    });
+    const icoShape = new THREE.Mesh(icoGeometry, icoMaterial);
+    icoShape.position.set(-4, 3, -6);
+    scene.add(icoShape);
+    floatingShapes.push(icoShape);
+    
+    // Cylinder
+    const cylinderGeometry = new THREE.CylinderGeometry(0.8, 0.8, 1.5, 32);
+    const cylinderMaterial = new THREE.MeshStandardMaterial({
+        color: 0xf59e0b,
+        emissive: 0x78350f,
+        emissiveIntensity: 0.3,
+        metalness: 0.7
+    });
+    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+    cylinder.position.set(7, -1, -3);
+    scene.add(cylinder);
+    floatingShapes.push(cylinder);
+    
+    // ============ ANIMATION LOOP ============
+    function animate() {
+        const delta = clock.getDelta();
+        const elapsedTime = performance.now() * 0.001;
+        
+        // Rotate main particle system
+        particles.rotation.y = elapsedTime * 0.05;
+        particles.rotation.x = Math.sin(elapsedTime * 0.1) * 0.1;
+        
+        // Rotate dust particles
+        dust.rotation.y = elapsedTime * 0.03;
+        dust.rotation.x = elapsedTime * 0.02;
+        
+        // Animate torus knot
+        if (torusKnot) {
+            torusKnot.rotation.x = elapsedTime * 0.3;
+            torusKnot.rotation.y = elapsedTime * 0.5;
+        }
+        
+        // Animate rotating cube
+        if (rotatingCube) {
+            rotatingCube.rotation.x = elapsedTime * 0.4;
+            rotatingCube.rotation.y = elapsedTime * 0.6;
+            rotatingCube.rotation.z = elapsedTime * 0.2;
+        }
+        
+        // Animate rings
+        ring.rotation.z = elapsedTime * 0.3;
+        ring2.rotation.y = elapsedTime * 0.2;
+        ring2.rotation.x = elapsedTime * 0.15;
+        
+        // Animate floating shapes
+        floatingShapes.forEach((shape, index) => {
+            if (shape.userData) {
+                shape.position.x = shape.userData.initialX + Math.sin(elapsedTime * shape.userData.speedX) * 1.5;
+                shape.position.y = shape.userData.initialY + Math.cos(elapsedTime * shape.userData.speedY) * 1.2;
+                shape.position.z = shape.userData.initialZ + Math.sin(elapsedTime * shape.userData.speedZ) * 1;
+                shape.rotation.x = elapsedTime * 0.5;
+                shape.rotation.y = elapsedTime * 0.3;
+            } else {
+                // For shapes without userData (icoShape, cylinder)
+                shape.rotation.x = elapsedTime * 0.3;
+                shape.rotation.y = elapsedTime * 0.4;
+                shape.rotation.z = elapsedTime * 0.2;
+            }
+        });
+        
+        // Animate moving light
+        movingLight.position.x = Math.sin(elapsedTime * 0.5) * 5;
+        movingLight.position.z = Math.cos(elapsedTime * 0.3) * 6;
+        movingLight.position.y = Math.sin(elapsedTime * 0.7) * 3;
+        
+        // Gentle camera movement
+        camera.position.x = Math.sin(elapsedTime * 0.1) * 1;
+        camera.position.y = Math.cos(elapsedTime * 0.15) * 0.5;
+        camera.lookAt(0, 0, 0);
+        
+        // Pulse light intensities
+        const pulse = Math.sin(elapsedTime * 2) * 0.2 + 0.5;
+        blueLight.intensity = 0.4 + Math.sin(elapsedTime * 1.5) * 0.2;
+        purpleLight.intensity = 0.4 + Math.cos(elapsedTime * 1.8) * 0.2;
+        greenLight.intensity = 0.3 + Math.sin(elapsedTime * 2.2) * 0.15;
+        
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    // Handle window resize
+    window.addEventListener('resize', onWindowResize, false);
+    
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init3DBackground);
+} else {
+    init3DBackground();
+}
